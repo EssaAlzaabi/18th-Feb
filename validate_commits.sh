@@ -1,14 +1,25 @@
 #!/bin/bash
 
-# Script to validate commit messages
+# Get the last 5 commits
+commits=$(git log -n 5 --pretty=format:"%s")
 
-# Regex pattern for commit messages
-pattern='^\[ISSUE-[0-9]+\] .+$'
+# Expected commit message format (example: JIRA-123: Commit message)
+format_regex="^JIRA-[0-9]+: .+"
 
-if [[ "$1" =~ $pattern ]] ; then
-    echo "Valid commit message"
-    exit 0
+# Validate each commit message
+invalid_commits=()
+for commit in $commits; do
+    if [[ ! $commit =~ $format_regex ]]; then
+        invalid_commits+=('$commit')
+    fi
+done
+
+# Print results
+if [ ${#invalid_commits[@]} -eq 0 ]; then
+    echo "All commit messages are valid."
 else
-    echo "Invalid commit message. Format: [ISSUE-<number>] <message>"
-    exit 1
+    echo "Invalid commit messages:";
+    for invalid in ${invalid_commits[@]}; do
+        echo "- $invalid"
+    done
 fi
